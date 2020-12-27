@@ -1,3 +1,9 @@
+## Быстрый старт
+```
+git clone https://github.com/LukaS0lncev/workspace.git
+cd workspace
+docker-compose up -d
+```
 ## Рабочая среда для Web разработки, на базе Docker
 Статья в которой пошагово создается этот проект
 [https://paimon.pro/blog/110-sreda-web-razrabotki-na-baze-docker-chast-1](https://paimon.pro/blog/110-sreda-web-razrabotki-na-baze-docker-chast-1)
