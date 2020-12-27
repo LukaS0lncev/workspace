@@ -1,0 +1,146 @@
+version: '3' #версия синтатксиса docker-compose
+
+networks: #создаем сеть
+  backend:
+
+services: #создаем сервисы
+  nginx: #наш основной Web сервер (Nginx)
+    image: nginx:stable-alpine #название контейнера с hub.docker.com и его версия
+    container_name: nginx-workspace #задаем имя контейнера
+    ports: #указываем порты локальная_машина:контейнер
+      - "${NGINX_PORT}:80" #берем значение порта локальной машины из .env и указываем порт контейнера (80)
+    volumes: #указываем связь по каталогам  локальный_пк:контейнер
+      - ./www:/var/www 
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/logs:/var/log/nginx/
+    depends_on: #определяем порядок запуска койнера, nginx будет последним запущен, после остальных в списке
+      - php-7.1
+      - php-7.3
+      - mysql-8
+      - mysql-5.7
+    environment: #устанавливаем переменные среды
+      TZ: ${WORKSPACE_TIMEZONE} #значение timezome берем из .env
+    networks: #опеределяем сеть для контейнера
+      - backend
+
+  mysql-5.7: #наша база данных (mysql версия 5.7)
+    image: mysql:5.7 #название контейнера с hub.docker.com и его версия
+    container_name: mysql-5.7-workspace #задаем имя контейнера
+    restart: unless-stopped
+    volumes: #указываем связь по каталогам  локальный_пк:контейнер
+      - ./mysql/5.7/data:/var/lib/mysql
+      - ./mysql/5.7/conf.d:/etc/mysql/conf.d
+      - ./mysql/5.7/logs:/var/log/mysql/
+      - ./mysql/5.7/dump:/dump
+    ports: #указываем порты локальная_машина:контейнер
+      - "${MYSQL_5_7_PORT}:3306" #берем значение порта локальной машины из .env и указываем порт контейнера (3306)
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TZ: ${WORKSPACE_TIMEZONE}
+    networks: #опеределяем сеть для контейнера
+      - backend
+
+  mysql-8: #наша база данных (mysql версия 8)
+    image: mysql:8.0.21
+    command: --default-authentication-plugin=mysql_native_password --skip_name_resolve
+    container_name: mysql-8-workspace #задаем имя контейнера
+    restart: unless-stopped
+    volumes: #указываем связь по каталогам  локальный_пк:контейнер
+      - ./mysql/8/data:/var/lib/mysql
+      - ./mysql/8/conf.d:/etc/mysql/conf.d
+      - ./mysql/8/logs:/var/log/mysql/
+      - ./mysql/8/dump:/dump
+    ports: #указываем порты локальная_машина:контейнер
+      - "${MYSQL_8_PORT}:3306" #берем значение порта локальной машины из .env и указываем порт контейнера (3306)
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TZ: ${WORKSPACE_TIMEZONE}
+    networks: #опеределяем сеть для контейнера
+      - backend
+
+  php-5.6:
+    build:
+      context: php/5.6/workspace #каталог где будет находиться Dockerfile
+      dockerfile: Dockerfile #имя Dockerfile, в нашем случае это "Dockerfile"
+      args: #передаем аргуенты в Dockerfile
+        DOCKER_PHP_VERSION: '5.6'
+        DOCKER_PHP_ENABLE_XDEBUG: ${DOCKER_PHP_ENABLE_XDEBUG}
+        TZ: ${WORKSPACE_TIMEZONE}
+    working_dir: /var/www
+    container_name: php-5.6-workspace #задаем имя контейнера
+    volumes: #указываем связь по каталогам  локальный_пк:контейнер
+      - ./.ssh:/home/www-data/.ssh
+      - ./www:/var/www
+      - ./php/5.6/ini/php.ini:/usr/local/etc/php/php.ini
+      - ./php/5.6/workers/supervisor.d:/etc/supervisor.d
+    ports: #указываем порты локальная_машина:контейнер
+      - "${PHP_5_6_PORT}:9000" #берем значение порта локальной машины из .env и указываем порт контейнера (9000)
+    networks: #опеределяем сеть для контейнера
+      - backend
+
+  php-7.1:
+    build:
+      context: php/7.1/workspace #каталог где будет находиться Dockerfile
+      dockerfile: Dockerfile #имя Dockerfile, в нашем случае это "Dockerfile"
+      args: #передаем аргуенты в Dockerfile
+        DOCKER_PHP_VERSION: '7.1'
+        DOCKER_PHP_ENABLE_XDEBUG: ${DOCKER_PHP_ENABLE_XDEBUG}
+        TZ: ${WORKSPACE_TIMEZONE}
+    working_dir: /var/www
+    container_name: php-7.1-workspace #задаем имя контейнера
+    volumes: #указываем связь по каталогам  локальный_пк:контейнер
+      - ./.ssh:/home/www-data/.ssh
+      - ./www:/var/www
+      - ./php/7.1/ini/php.ini:/usr/local/etc/php/php.ini
+      - ./php/7.1/workers/supervisor.d:/etc/supervisor.d
+    ports: #указываем порты локальная_машина:контейнер
+      - "${PHP_7_1_PORT}:9000" #берем значение порта локальной машины из .env и указываем порт контейнера (9000)
+    networks: #опеределяем сеть для контейнера
+      - backend
+
+  php-7.2:
+    build:
+      context: php/7.2/workspace #каталог где будет находиться Dockerfile
+      dockerfile: Dockerfile #имя Dockerfile, в нашем случае это "Dockerfile"
+      args: #передаем аргуенты в Dockerfile
+        DOCKER_PHP_VERSION: '7.2'
+        DOCKER_PHP_ENABLE_XDEBUG: ${DOCKER_PHP_ENABLE_XDEBUG}
+        TZ: ${WORKSPACE_TIMEZONE}
+    working_dir: /var/www
+    container_name: php-7.2-workspace #задаем имя контейнера
+    volumes: #указываем связь по каталогам  локальный_пк:контейнер
+      - ./.ssh:/home/www-data/.ssh
+      - ./www:/var/www
+      - ./php/7.2/ini/php.ini:/usr/local/etc/php/php.ini
+      - ./php/7.2/workers/supervisor.d:/etc/supervisor.d
+    ports: #указываем порты локальная_машина:контейнер
+      - "${PHP_7_2_PORT}:9000" #берем значение порта локальной машины из .env и указываем порт контейнера (9000)
+    networks: #опеределяем сеть для контейнера
+      - backend
+
+  php-7.3:
+    build:
+      context: php/7.3/workspace #каталог где будет находиться Dockerfile
+      dockerfile: Dockerfile #имя Dockerfile, в нашем случае это "Dockerfile"
+      args: #передаем аргуенты в Dockerfile
+        DOCKER_PHP_VERSION: '7.3'
+        DOCKER_PHP_ENABLE_XDEBUG: ${DOCKER_PHP_ENABLE_XDEBUG}
+        TZ: ${WORKSPACE_TIMEZONE}
+    working_dir: /var/www
+    container_name: php-7.3-workspace #задаем имя контейнера
+    volumes: #указываем связь по каталогам  локальный_пк:контейнер
+      - ./.ssh:/home/www-data/.ssh
+      - ./www:/var/www
+      - ./php/7.3/ini/php.ini:/usr/local/etc/php/php.ini
+      - ./php/7.3/workers/supervisor.d:/etc/supervisor.d
+    ports: #указываем порты локальная_машина:контейнер
+      - "${PHP_7_3_PORT}:9000" #берем значение порта локальной машины из .env и указываем порт контейнера (9000)
+    networks: #опеределяем сеть для контейнера
+      - backend
+
