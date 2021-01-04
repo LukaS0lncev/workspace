@@ -21,12 +21,13 @@ docker-compose up -d
 * mysql
     * mysql:5.7
     * mysql:8.0.21
+* Elasticsearch
+    * Kibana
 
 ### Что будет реализовано в будущем:
 * mongo
 * postgres
 * redis
-* elasticsearch
 >список будет дополняться
     
 ### Список расширений php [PHP Modules]:

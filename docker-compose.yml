@@ -36,7 +36,7 @@ services: #создаем сервисы
       - "${MYSQL_5_7_PORT}:3306" #берем значение порта локальной машины из .env и указываем порт контейнера (3306)
     security_opt:
       - seccomp:unconfined
-    environment:
+    environment: #устанавливаем переменные среды
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       TZ: ${WORKSPACE_TIMEZONE}
@@ -57,7 +57,7 @@ services: #создаем сервисы
       - "${MYSQL_8_PORT}:3306" #берем значение порта локальной машины из .env и указываем порт контейнера (3306)
     security_opt:
       - seccomp:unconfined
-    environment:
+    environment: #устанавливаем переменные среды
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       TZ: ${WORKSPACE_TIMEZONE}
@@ -141,6 +141,39 @@ services: #создаем сервисы
       - ./php/7.3/workers/supervisor.d:/etc/supervisor.d
     ports: #указываем порты локальная_машина:контейнер
       - "${PHP_7_3_PORT}:9000" #берем значение порта локальной машины из .env и указываем порт контейнера (9000)
+    networks: #опеределяем сеть для контейнера
+      - backend
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1 #берем контейнер с официального сайта elastic.co
+    container_name: elasticsearch-workspace #задаем имя контейнера
+    environment: #устанавливаем переменные среды
+      - node.name=elasticsearch
+      - cluster.name=es-docker-cluster
+      - cluster.initial_master_nodes=elasticsearch
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" #задаем размер выделяемой ОЗУ
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes: #указываем связь по каталогам  локальный_пк:контейнер
+      - ./elasticsearch/data:/usr/share/elasticsearch/data
+    ports: #указываем порты локальная_машина:контейнер
+      - ${ES_PORT}:9200
+    networks: #опеределяем сеть для контейнера
+      - backend
+  
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.10.1 #берем контейнер с официального сайта elastic.co
+    container_name: kibana-workspace #задаем имя контейнера
+    ports: #указываем порты локальная_машина:контейнер
+      - ${KIBANA_PORT}:5601
+    environment: #устанавливаем переменные среды
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    depends_on: #определяем порядок запуска койнера, kibana будет запущен после elasticsearch
+      - elasticsearch
     networks: #опеределяем сеть для контейнера
       - backend
 

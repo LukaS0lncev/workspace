@@ -1,0 +1,1 @@
+172.22.0.1 - - [27/Dec/2020:12:24:58 +0300] "GET /favicon.ico HTTP/1.1" 404 555 "http://site-2.local/info.php" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
